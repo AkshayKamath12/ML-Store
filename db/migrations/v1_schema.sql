@@ -16,6 +16,16 @@ CREATE TABLE users (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- maps members to given teams
+CREATE TABLE team_members (
+    team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    role TEXT CHECK (role IN ('ADMIN', 'MEMBER')) NOT NULL,
+    PRIMARY KEY (team_id, user_id)
+);
+-- reverse composite for finding all teams a user is a part of
+CREATE INDEX idx_team_members_user_team ON team_members(user_id, team_id);
+
 -- maps oath identity to 
 CREATE TABLE auth_identities (
     id BIGSERIAL PRIMARY KEY,
@@ -27,7 +37,7 @@ CREATE TABLE auth_identities (
     UNIQUE (provider, provider_id),
     UNIQUE (user_id, provider)
 );
--- unique constraints create the b trees we need for indexing purposes
+-- unique constraints create the b tree indexes we need
 
 -- allows headless scripts to authenticate without a browser
 CREATE TABLE api_keys (
@@ -40,19 +50,8 @@ CREATE TABLE api_keys (
     last_used_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 CREATE INDEX idx_api_keys_user_id ON api_keys(user_id);
 CREATE INDEX idx_api_keys_expires_at ON api_keys(expires_at);
-
--- maps members to given teams
-CREATE TABLE team_members (
-    team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    role TEXT CHECK (role IN ('ADMIN', 'MEMBER')) NOT NULL,
-    PRIMARY KEY (team_id, user_id)
-);
--- reverse composite for finding all teams a user is a part of
-CREATE INDEX idx_team_members_user_team ON team_members(user_id, team_id);
 
 -- details for ML project for a given team
 CREATE TABLE model_projects (
