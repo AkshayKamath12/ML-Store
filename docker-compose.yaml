@@ -1,0 +1,13 @@
+services:
+  db:
+    container_name: db
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: ml_store
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d
